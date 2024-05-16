@@ -1,0 +1,67 @@
+import java.text.SimpleDateFormat
+
+data class Transaction(val amount: Double, val type: TransactionType, val timestamp: Date)
+
+enum class TransactionType {
+    INCOME, EXPENSE
+}
+
+class Account(private var balance: Double = 0.0, private val transactions: MutableList<Transaction> = mutableListOf()) {
+
+    fun viewBalance(): Double {
+        return balance
+    }
+
+    fun viewTransactionHistory(filterType: TransactionType? = null, startDate: Date? = null, endDate: Date? = null) {
+        val filteredTransactions = if (filterType != null) {
+            transactions.filter { it.type == filterType }
+        } else {
+            transactions
+        }
+
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
+        println("Transaction History:")
+        filteredTransactions.forEach { transaction ->
+            if ((startDate == null || transaction.timestamp >= startDate) &&
+                (endDate == null || transaction.timestamp <= endDate)
+            ) {
+                println("Date: ${dateFormat.format(transaction.timestamp)}, Type: ${transaction.type}, Amount: ${transaction.amount}")
+            }
+        }
+    }
+
+    fun receiveMoney(amount: Double) {
+        if (amount > 0) {
+            balance += amount
+            val transaction = Transaction(amount, TransactionType.INCOME, Date())
+            transactions.add(transaction)
+            println("Received $amount successfully.")
+            println("Updated balance: $balance")
+        } else {
+            println("Invalid amount received.")
+        }
+    }
+
+    fun sendMoney(amount: Double) {
+        if (amount > 0 && amount <= balance) {
+            balance -= amount
+            val transaction = Transaction(amount, TransactionType.EXPENSE, Date())
+            transactions.add(transaction)
+            println("Sent $amount successfully.")
+            println("Updated balance: $balance")
+        } else {
+            println("Insufficient funds or invalid amount to send.")
+        }
+    }
+
+    fun main() {
+        val account = Account()
+
+        // receive money
+        account.receiveMoney(100.0)
+
+        // send money
+        account.sendMoney(50.0)
+
+}
